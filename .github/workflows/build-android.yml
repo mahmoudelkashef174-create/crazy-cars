@@ -33,7 +33,18 @@ jobs:
           if [ -z "$UNITY_EMAIL" ]; then echo "::error::UNITY_EMAIL is missing"; missing=1; fi
           if [ -z "$UNITY_PASSWORD" ]; then echo "::error::UNITY_PASSWORD is missing"; missing=1; fi
           if [ "$missing" -ne 0 ]; then exit 1; fi
-          echo "Unity activation secrets are configured."
+
+          if [[ ! "$UNITY_EMAIL" =~ ^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$ ]]; then
+            echo "::error::UNITY_EMAIL does not look like a valid email address."
+            exit 1
+          fi
+
+          if [[ "$UNITY_PASSWORD" =~ [^A-Za-z0-9] ]]; then
+            echo "::error::UNITY_PASSWORD contains special characters. GameCI documents known login issues with special characters; use an alphanumeric Unity password for CI."
+            exit 1
+          fi
+
+          echo "Unity activation secret preflight passed."
 
       - name: Build APK
         uses: game-ci/unity-builder@v4
